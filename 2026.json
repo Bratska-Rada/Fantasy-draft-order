@@ -1,0 +1,114 @@
+{
+  "start": 1784347200000,
+  "interval": 8,
+  "assignments": [
+    {
+      "team": "We in Injury City",
+      "driver": {
+        "car": "19",
+        "name": "Chase Briscoe",
+        "team": "Joe Gibbs Racing",
+        "make": "Toyota"
+      }
+    },
+    {
+      "team": "Team baldyukj",
+      "driver": {
+        "car": "33",
+        "name": "Austin Hill",
+        "team": "Richard Childress Racing",
+        "make": "Chevrolet"
+      }
+    },
+    {
+      "team": "10th on Fantasy Language",
+      "driver": {
+        "car": "10",
+        "name": "Ty Dillon",
+        "team": "Kaulig Racing",
+        "make": "Chevrolet"
+      }
+    },
+    {
+      "team": "We in Vic City",
+      "driver": {
+        "car": "77",
+        "name": "Carson Hocevar",
+        "team": "Spire Motorsports",
+        "make": "Chevrolet"
+      }
+    },
+    {
+      "team": "Pittman in the First",
+      "driver": {
+        "car": "41",
+        "name": "Cole Custer",
+        "team": "Haas Factory Team",
+        "make": "Chevrolet"
+      }
+    },
+    {
+      "team": "Yuiry Tarded",
+      "driver": {
+        "car": "71",
+        "name": "Michael McDowell",
+        "team": "Spire Motorsports",
+        "make": "Chevrolet"
+      }
+    },
+    {
+      "team": "Chaeyoung",
+      "driver": {
+        "car": "97",
+        "name": "Shane van Gisbergen",
+        "team": "Trackhouse Racing",
+        "make": "Chevrolet"
+      }
+    },
+    {
+      "team": "Team Moe Lester",
+      "driver": {
+        "car": "45",
+        "name": "Tyler Reddick",
+        "team": "23XI Racing",
+        "make": "Toyota"
+      }
+    },
+    {
+      "team": "Martin’s Pro Tip",
+      "driver": {
+        "car": "2",
+        "name": "Austin Cindric",
+        "team": "Team Penske",
+        "make": "Ford"
+      }
+    },
+    {
+      "team": "Veto",
+      "driver": {
+        "car": "11",
+        "name": "Denny Hamlin",
+        "team": "Joe Gibbs Racing",
+        "make": "Toyota"
+      }
+    },
+    {
+      "team": "Goonton is a hoe",
+      "driver": {
+        "car": "23",
+        "name": "Bubba Wallace",
+        "team": "23XI Racing",
+        "make": "Toyota"
+      }
+    },
+    {
+      "team": "Goonton",
+      "driver": {
+        "car": "1",
+        "name": "Ross Chastain",
+        "team": "Trackhouse Racing",
+        "make": "Chevrolet"
+      }
+    }
+  ]
+}
