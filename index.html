@@ -57,37 +57,13 @@ border-radius:24px;padding:24px;animation:pop .55s cubic-bezier(.2,.8,.2,1)}
 <h1>🏁 Братська Рада</h1>
 <div class="subtitle">2026 NASCAR Driver Reveal</div>
 </header>
-<section id="setup" class="card">
-<h2 style="margin-top:0">Organizer setup</h2>
-<div class="row">
-<div>
-<label>Reveal date & time</label>
-<input id="revealTime" type="datetime-local">
-</div>
-<div>
-<label>Seconds between reveals</label>
-<select id="interval">
-<option value="5">5 seconds</option>
-<option value="8" selected>8 seconds</option>
-<option value="10">10 seconds</option>
-<option value="15">15 seconds</option>
-</select>
-</div>
-</div>
-<label>Private randomization seed</label>
-<input id="seed" placeholder="Only the organizer sees this">
-<div class="actions">
-<button class="primary" id="createLink">Create synchronized reveal link</button>
-<button class="secondary" id="preview">Preview now</button>
-</div>
-<div id="shareArea" class="hidden">
-<label>Share this exact link in Viber</label>
-<div id="shareLink" class="sharebox"></div>
-<div class="actions">
-<button class="secondary" id="copyLink">Copy link</button>
-</div>
-</div>
-<p class="note">The seed stays private on your device. The public viewer link contains the completed assignments, not the seed. Anyone opening it later will see the final results automatically.</p>
+<section id="loading" class="card">
+<h2 style="margin-top:0;text-align:center">Loading reveal…</h2>
+<p class="status">Please wait while the draw is loaded.</p>
+</section>
+<section id="error" class="card hidden">
+<h2 style="margin-top:0;text-align:center">Reveal not found</h2>
+<p class="status" id="errorMessage">Check the link and try again.</p>
 </section>
 <section id="show" class="card hidden">
 <div id="waiting">
@@ -114,90 +90,46 @@ border-radius:24px;padding:24px;animation:pop .55s cubic-bezier(.2,.8,.2,1)}
 </section>
 </div>
 <script>
-const TEAMS = ["We in Vic City", "Team baldyukj", "We in Injury City", "Team Moe Lester", "Yuiry Tarded", "Veto", "Goonton", "Pittman in the First", "Martin’s Pro Tip", "Goonton is a hoe", "Chaeyoung", "10th on Fantasy Language"];
-const DRIVERS = [{"car": "1", "name": "Ross Chastain", "team": "Trackhouse Racing", "make": "Chevrolet"}, {"car": "2", "name": "Austin Cindric", "team": "Team Penske", "make": "Ford"}, {"car": "3", "name": "Austin Dillon", "team": "Richard Childress Racing", "make": "Chevrolet"}, {"car": "4", "name": "Noah Gragson", "team": "Front Row Motorsports", "make": "Ford"}, {"car": "5", "name": "Kyle Larson", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "6", "name": "Brad Keselowski", "team": "RFK Racing", "make": "Ford"}, {"car": "7", "name": "Daniel Suárez", "team": "Spire Motorsports", "make": "Chevrolet"}, {"car": "9", "name": "Chase Elliott", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "10", "name": "Ty Dillon", "team": "Kaulig Racing", "make": "Chevrolet"}, {"car": "11", "name": "Denny Hamlin", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "12", "name": "Ryan Blaney", "team": "Team Penske", "make": "Ford"}, {"car": "16", "name": "A. J. Allmendinger", "team": "Kaulig Racing", "make": "Chevrolet"}, {"car": "17", "name": "Chris Buescher", "team": "RFK Racing", "make": "Ford"}, {"car": "19", "name": "Chase Briscoe", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "20", "name": "Christopher Bell", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "21", "name": "Josh Berry", "team": "Wood Brothers Racing", "make": "Ford"}, {"car": "22", "name": "Joey Logano", "team": "Team Penske", "make": "Ford"}, {"car": "23", "name": "Bubba Wallace", "team": "23XI Racing", "make": "Toyota"}, {"car": "24", "name": "William Byron", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "33", "name": "Austin Hill", "team": "Richard Childress Racing", "make": "Chevrolet"}, {"car": "34", "name": "Todd Gilliland", "team": "Front Row Motorsports", "make": "Ford"}, {"car": "35", "name": "Riley Herbst", "team": "23XI Racing", "make": "Toyota"}, {"car": "38", "name": "Zane Smith", "team": "Front Row Motorsports", "make": "Ford"}, {"car": "41", "name": "Cole Custer", "team": "Haas Factory Team", "make": "Chevrolet"}, {"car": "42", "name": "John Hunter Nemechek", "team": "Legacy Motor Club", "make": "Toyota"}, {"car": "43", "name": "Erik Jones", "team": "Legacy Motor Club", "make": "Toyota"}, {"car": "45", "name": "Tyler Reddick", "team": "23XI Racing", "make": "Toyota"}, {"car": "47", "name": "Ricky Stenhouse Jr.", "team": "Hyak Motorsports", "make": "Chevrolet"}, {"car": "48", "name": "Alex Bowman", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "51", "name": "Cody Ware", "team": "Rick Ware Racing", "make": "Chevrolet"}, {"car": "54", "name": "Ty Gibbs", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "60", "name": "Ryan Preece", "team": "RFK Racing", "make": "Ford"}, {"car": "66", "name": "Chad Finchum", "team": "Garage 66", "make": "Ford"}, {"car": "71", "name": "Michael McDowell", "team": "Spire Motorsports", "make": "Chevrolet"}, {"car": "77", "name": "Carson Hocevar", "team": "Spire Motorsports", "make": "Chevrolet"}, {"car": "88", "name": "Connor Zilisch", "team": "Trackhouse Racing", "make": "Chevrolet"}, {"car": "97", "name": "Shane van Gisbergen", "team": "Trackhouse Racing", "make": "Chevrolet"}];
-function xmur3(str) {
-let h = 1779033703 ^ str.length;
-for (let i=0;i<str.length;i++) h = Math.imul(h ^ str.charCodeAt(i), 3432918353), h = h << 13 | h >>> 19;
-return function() { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^= h >>> 16) >>> 0; }
-}
-function mulberry32(a) {
-return function() { let t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }
-}
-function shuffle(arr, rand) {
-const out=[...arr];
-for(let i=out.length-1;i>0;i--) { const j=Math.floor(rand()*(i+1)); [out[i],out[j]]=[out[j],out[i]]; }
-return out;
-}
-function assignments(seed) {
-const seedFn=xmur3(seed);
-const rand=mulberry32(seedFn());
-const shuffledTeams=shuffle(TEAMS,rand);
-const chosenDrivers=shuffle(DRIVERS,rand).slice(0,TEAMS.length);
-return shuffledTeams.map((team,i)=>({team,driver:chosenDrivers[i]}));
-}
 function params() { return new URLSearchParams(location.search); }
-function encodeDraw(list) {
-return btoa(unescape(encodeURIComponent(JSON.stringify(list))));
+
+function showError(message) {
+document.getElementById('loading').classList.add('hidden');
+document.getElementById('show').classList.add('hidden');
+document.getElementById('errorMessage').textContent=message;
+document.getElementById('error').classList.remove('hidden');
 }
-function decodeDraw(value) {
-return JSON.parse(decodeURIComponent(escape(atob(value))));
-}
-function makeLink(start, interval, list) {
-const u=new URL(location.href.split('?')[0]);
-u.searchParams.set('start', String(start));
-u.searchParams.set('interval', String(interval));
-u.searchParams.set('draw', encodeDraw(list));
-return u.toString();
-}
-const revealInput=document.getElementById('revealTime');
-const now=new Date(Date.now()+10*60*1000);
-now.setSeconds(0,0);
-revealInput.value=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
-document.getElementById('createLink').onclick=()=>{
-const start=new Date(revealInput.value).getTime();
-const interval=Number(document.getElementById('interval').value);
-const seed=document.getElementById('seed').value.trim() || crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
-if(!Number.isFinite(start)) return alert('Choose a reveal date and time.');
-const link=makeLink(start,interval,assignments(seed));
-document.getElementById('shareLink').textContent=link;
-document.getElementById('shareArea').classList.remove('hidden');
-};
-document.getElementById('copyLink').onclick=async()=>{
-await navigator.clipboard.writeText(document.getElementById('shareLink').textContent);
-document.getElementById('copyLink').textContent='Copied!';
-};
-document.getElementById('preview').onclick=()=>{
-const seed=document.getElementById('seed').value.trim() || 'preview';
-runReveal(Date.now()+2000, Number(document.getElementById('interval').value), assignments(seed), true);
-};
-function runReveal(start, intervalSec, list, preview=false) {
-document.getElementById('setup').classList.add('hidden');
+
+function runReveal(start, intervalSec, list) {
+document.getElementById('loading').classList.add('hidden');
 document.getElementById('show').classList.remove('hidden');
 const waiting=document.getElementById('waiting');
 const reveal=document.getElementById('reveal');
 const finished=document.getElementById('finished');
 document.getElementById('scheduled').textContent=new Date(start).toLocaleString([],{dateStyle:'full',timeStyle:'short'});
 let timer;
-function tick() {
-const diff=start-Date.now();
-if(diff<=0) { clearInterval(timer); startSequence(); return; }
-const total=Math.ceil(diff/1000);
-const h=Math.floor(total/3600), m=Math.floor((total%3600)/60), s=total%60;
-document.getElementById('countdown').textContent=(h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+
+function showFinal() {
+waiting.classList.add('hidden');
+reveal.classList.add('hidden');
+finished.classList.remove('hidden');
+document.getElementById('results').innerHTML=list.map((a,i)=>`
+<div class="result">
+<div class="num">${i+1}</div>
+<div><strong>${a.team}</strong><span class="small">Assigned driver</span></div>
+<div class="right"><strong>#${a.driver.car} ${a.driver.name}</strong><span class="small">${a.driver.make}</span></div>
+</div>`).join('');
+const text=list.map((a,i)=>`${i+1}. ${a.team} — #${a.driver.car} ${a.driver.name}`).join('\n');
+const btn=document.getElementById('copyResults');
+btn.onclick=async()=>{
+try {
+await navigator.clipboard.writeText(text);
+btn.textContent='Copied!';
+} catch {
+btn.textContent='Copy failed';
 }
-tick(); timer=setInterval(tick,250);
-function startSequence() {
-waiting.classList.add('hidden'); reveal.classList.remove('hidden');
-const elapsed=Math.max(0,Date.now()-start);
-let index=Math.min(list.length, Math.floor(elapsed/(intervalSec*1000)));
-show(index);
-const loop=setInterval(()=>{
-index++;
-if(index>=list.length) { clearInterval(loop); showFinal(); }
-else show(index);
-},intervalSec*1000);
+};
 }
+
 function show(i) {
 const a=list[i];
 if(!a) return showFinal();
@@ -208,33 +140,75 @@ document.getElementById('carNo').textContent='#'+a.driver.car;
 document.getElementById('driverName').textContent=a.driver.name;
 document.getElementById('driverMeta').textContent=a.driver.team+' • '+a.driver.make;
 const card=document.getElementById('driverCard');
-card.style.animation='none'; void card.offsetWidth; card.style.animation='';
-}
-function showFinal() {
-reveal.classList.add('hidden'); finished.classList.remove('hidden');
-document.getElementById('results').innerHTML=list.map((a,i)=>`
-<div class="result">
-<div class="num">${i+1}</div>
-<div><strong>${a.team}</strong><span class="small">Assigned driver</span></div>
-<div class="right"><strong>#${a.driver.car} ${a.driver.name}</strong><span class="small">${a.driver.make}</span></div>
-</div>`).join('');
-const text=list.map((a,i)=>`${i+1}. ${a.team} — #${a.driver.car} ${a.driver.name}`).join('\n');
-const btn=document.getElementById('copyResults');
-btn.onclick=async()=>{ await navigator.clipboard.writeText(text); btn.textContent='Copied!'; };
+card.style.animation='none';
+void card.offsetWidth;
+card.style.animation='';
 }
 
+function startSequence() {
+waiting.classList.add('hidden');
+const elapsed=Math.max(0,Date.now()-start);
+const revealDuration=list.length*intervalSec*1000;
+if(elapsed>=revealDuration) return showFinal();
+
+reveal.classList.remove('hidden');
+let index=Math.min(list.length-1,Math.floor(elapsed/(intervalSec*1000)));
+show(index);
+const nextRevealAt=start+(index+1)*intervalSec*1000;
+let delay=Math.max(0,nextRevealAt-Date.now());
+
+function advance() {
+index++;
+if(index>=list.length) return showFinal();
+show(index);
+setTimeout(advance,intervalSec*1000);
 }
-const p=params();
-if(p.has('start')&&p.has('draw')) {
+setTimeout(advance,delay);
+}
+
+function tick() {
+const diff=start-Date.now();
+if(diff<=0) {
+clearInterval(timer);
+startSequence();
+return;
+}
+const total=Math.ceil(diff/1000);
+const days=Math.floor(total/86400);
+const h=Math.floor((total%86400)/3600);
+const m=Math.floor((total%3600)/60);
+const s=total%60;
+document.getElementById('countdown').textContent=
+(days?days+'d ':'')+
+String(h).padStart(2,'0')+':'+
+String(m).padStart(2,'0')+':'+
+String(s).padStart(2,'0');
+}
+
+tick();
+timer=setInterval(tick,250);
+}
+
+async function loadDraw() {
+const drawId=(params().get('draw')||'').trim();
+if(!/^[a-zA-Z0-9_-]+$/.test(drawId)) {
+showError('This reveal link is missing a valid draw ID.');
+return;
+}
 try {
-const start=Number(p.get('start'));
-const interval=Math.max(3,Number(p.get('interval')||8));
-const list=decodeDraw(p.get('draw'));
-runReveal(start,interval,list);
-} catch(e) {
-alert('This reveal link is invalid or incomplete.');
+const response=await fetch(`draws/${encodeURIComponent(drawId)}.json`,{cache:'no-store'});
+if(!response.ok) throw new Error('not found');
+const data=await response.json();
+if(!Number.isFinite(data.start)||!Number.isFinite(data.interval)||!Array.isArray(data.assignments)) {
+throw new Error('invalid');
+}
+runReveal(data.start,Math.max(3,data.interval),data.assignments);
+} catch {
+showError('This reveal could not be loaded. Check the draw ID or try again shortly.');
 }
 }
+
+loadDraw();
 </script>
 </body>
 </html>
