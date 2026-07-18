@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Братська Рада — NASCAR Driver Reveal</title>
+<style>
+:root {
+--bg:#060b20; --panel:#101735; --panel2:#151e43; --text:#f7f9ff;
+--muted:#91a3cc; --accent:#49e7b2; --accent2:#6fa8ff; --danger:#ff5c88;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#172551 0,#060b20 45%);
+color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+.wrap{max-width:900px;margin:auto;padding:22px 16px 50px}
+header{text-align:center;margin:12px 0 22px}
+h1{font-size:clamp(28px,6vw,52px);margin:0;letter-spacing:-.03em}
+.subtitle{color:var(--muted);margin-top:8px}
+.card{background:rgba(16,23,53,.9);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:18px;
+box-shadow:0 20px 60px rgba(0,0,0,.32);margin-bottom:16px}
+label{display:block;color:var(--muted);font-size:13px;font-weight:700;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.08em}
+input,select,button{font:inherit}
+input,select{width:100%;background:#09102a;color:var(--text);border:1px solid rgba(255,255,255,.13);border-radius:13px;padding:13px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{border:0;border-radius:14px;padding:13px 16px;font-weight:850;cursor:pointer}
+.primary{background:linear-gradient(135deg,var(--accent),#34bff5);color:#04111d}
+.secondary{background:#273158;color:white}
+.danger{background:#4a1830;color:#ffd8e6}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.hidden{display:none!important}
+.countdown{font-size:clamp(52px,14vw,110px);font-weight:950;text-align:center;letter-spacing:-.06em;margin:20px 0}
+.status{text-align:center;color:var(--muted);font-size:18px}
+.reveal{text-align:center;padding:28px 12px}
+.team-name{font-size:clamp(28px,7vw,58px);font-weight:950;line-height:1.02}
+.arrow{font-size:42px;color:var(--accent);margin:14px}
+.driver-card{background:linear-gradient(145deg,#172451,#0d1536);border:1px solid rgba(255,255,255,.11);
+border-radius:24px;padding:24px;animation:pop .55s cubic-bezier(.2,.8,.2,1)}
+.car{font-size:clamp(52px,13vw,96px);font-weight:1000;color:var(--accent)}
+.driver{font-size:clamp(28px,7vw,52px);font-weight:950}
+.meta{color:var(--muted);font-size:18px;margin-top:8px}
+.progress{height:10px;background:#09102a;border-radius:99px;overflow:hidden;margin:18px 0}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .4s}
+.results{display:grid;gap:10px}
+.result{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:12px;background:#0a112d;border-radius:15px;padding:12px}
+.num{width:36px;height:36px;border-radius:11px;background:#202b55;display:grid;place-items:center;font-weight:900}
+.small{font-size:13px;color:var(--muted)}
+.result strong{display:block}
+.sharebox{word-break:break-all;background:#080f29;border-radius:12px;padding:11px;color:#b9c8ec;font-size:13px;margin-top:10px}
+.note{font-size:13px;color:var(--muted);line-height:1.45}
+@keyframes pop{0%{transform:scale(.86);opacity:0}100%{transform:scale(1);opacity:1}}
+@media(max-width:600px){.row{grid-template-columns:1fr} .result{grid-template-columns:38px 1fr} .result .right{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>🏁 Братська Рада</h1>
+<div class="subtitle">2026 NASCAR Driver Reveal</div>
+</header>
+<section id="setup" class="card">
+<h2 style="margin-top:0">Organizer setup</h2>
+<div class="row">
+<div>
+<label>Reveal date & time</label>
+<input id="revealTime" type="datetime-local">
+</div>
+<div>
+<label>Seconds between reveals</label>
+<select id="interval">
+<option value="5">5 seconds</option>
+<option value="8" selected>8 seconds</option>
+<option value="10">10 seconds</option>
+<option value="15">15 seconds</option>
+</select>
+</div>
+</div>
+<label>Secret seed</label>
+<input id="seed" placeholder="Type anything, e.g. brotherhood-2026">
+<div class="actions">
+<button class="primary" id="createLink">Create synchronized reveal link</button>
+<button class="secondary" id="preview">Preview now</button>
+</div>
+<div id="shareArea" class="hidden">
+<label>Share this exact link in Viber</label>
+<div id="shareLink" class="sharebox"></div>
+<div class="actions">
+<button class="secondary" id="copyLink">Copy link</button>
+</div>
+</div>
+<p class="note">Everyone opening the same link gets the same driver assignments and the same timed reveal. The seed is encoded in the URL, so keep the organizer link private until you are ready to share it.</p>
+</section>
+<section id="show" class="card hidden">
+<div id="waiting">
+<div class="status">Driver assignments begin in</div>
+<div class="countdown" id="countdown">--:--</div>
+<div class="status" id="scheduled"></div>
+</div>
+<div id="reveal" class="reveal hidden">
+<div class="status" id="revealCounter"></div>
+<div class="progress"><div id="bar"></div></div>
+<div class="team-name" id="teamName"></div>
+<div class="arrow">↓</div>
+<div class="driver-card" id="driverCard">
+<div class="car" id="carNo"></div>
+<div class="driver" id="driverName"></div>
+<div class="meta" id="driverMeta"></div>
+</div>
+</div>
+<div id="finished" class="hidden">
+<h2 style="text-align:center">Final assignments</h2>
+<div class="results" id="results"></div>
+</div>
+</section>
+</div>
+<script>
+const TEAMS = ["We in Vic City", "Team baldyukj", "We in Injury City", "Team Moe Lester", "Yuiry Tarded", "Veto", "Goonton", "Pittman in the First", "Martin’s Pro Tip", "Goonton is a hoe", "Chaeyoung", "10th on Fantasy Language"];
+const DRIVERS = [{"car": "1", "name": "Ross Chastain", "team": "Trackhouse Racing", "make": "Chevrolet"}, {"car": "2", "name": "Austin Cindric", "team": "Team Penske", "make": "Ford"}, {"car": "3", "name": "Austin Dillon", "team": "Richard Childress Racing", "make": "Chevrolet"}, {"car": "4", "name": "Noah Gragson", "team": "Front Row Motorsports", "make": "Ford"}, {"car": "5", "name": "Kyle Larson", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "6", "name": "Brad Keselowski", "team": "RFK Racing", "make": "Ford"}, {"car": "7", "name": "Daniel Suárez", "team": "Spire Motorsports", "make": "Chevrolet"}, {"car": "9", "name": "Chase Elliott", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "10", "name": "Ty Dillon", "team": "Kaulig Racing", "make": "Chevrolet"}, {"car": "11", "name": "Denny Hamlin", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "12", "name": "Ryan Blaney", "team": "Team Penske", "make": "Ford"}, {"car": "16", "name": "A. J. Allmendinger", "team": "Kaulig Racing", "make": "Chevrolet"}, {"car": "17", "name": "Chris Buescher", "team": "RFK Racing", "make": "Ford"}, {"car": "19", "name": "Chase Briscoe", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "20", "name": "Christopher Bell", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "21", "name": "Josh Berry", "team": "Wood Brothers Racing", "make": "Ford"}, {"car": "22", "name": "Joey Logano", "team": "Team Penske", "make": "Ford"}, {"car": "23", "name": "Bubba Wallace", "team": "23XI Racing", "make": "Toyota"}, {"car": "24", "name": "William Byron", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "33", "name": "Austin Hill", "team": "Richard Childress Racing", "make": "Chevrolet"}, {"car": "34", "name": "Todd Gilliland", "team": "Front Row Motorsports", "make": "Ford"}, {"car": "35", "name": "Riley Herbst", "team": "23XI Racing", "make": "Toyota"}, {"car": "38", "name": "Zane Smith", "team": "Front Row Motorsports", "make": "Ford"}, {"car": "41", "name": "Cole Custer", "team": "Haas Factory Team", "make": "Chevrolet"}, {"car": "42", "name": "John Hunter Nemechek", "team": "Legacy Motor Club", "make": "Toyota"}, {"car": "43", "name": "Erik Jones", "team": "Legacy Motor Club", "make": "Toyota"}, {"car": "45", "name": "Tyler Reddick", "team": "23XI Racing", "make": "Toyota"}, {"car": "47", "name": "Ricky Stenhouse Jr.", "team": "Hyak Motorsports", "make": "Chevrolet"}, {"car": "48", "name": "Alex Bowman", "team": "Hendrick Motorsports", "make": "Chevrolet"}, {"car": "51", "name": "Cody Ware", "team": "Rick Ware Racing", "make": "Chevrolet"}, {"car": "54", "name": "Ty Gibbs", "team": "Joe Gibbs Racing", "make": "Toyota"}, {"car": "60", "name": "Ryan Preece", "team": "RFK Racing", "make": "Ford"}, {"car": "66", "name": "Chad Finchum", "team": "Garage 66", "make": "Ford"}, {"car": "71", "name": "Michael McDowell", "team": "Spire Motorsports", "make": "Chevrolet"}, {"car": "77", "name": "Carson Hocevar", "team": "Spire Motorsports", "make": "Chevrolet"}, {"car": "88", "name": "Connor Zilisch", "team": "Trackhouse Racing", "make": "Chevrolet"}, {"car": "97", "name": "Shane van Gisbergen", "team": "Trackhouse Racing", "make": "Chevrolet"}];
+function xmur3(str) {
+let h = 1779033703 ^ str.length;
+for (let i=0;i<str.length;i++) h = Math.imul(h ^ str.charCodeAt(i), 3432918353), h = h << 13 | h >>> 19;
+return function() { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^= h >>> 16) >>> 0; }
+}
+function mulberry32(a) {
+return function() { let t = a += 0x6D2B79F5; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+}
+function shuffle(arr, rand) {
+const out=[...arr];
+for(let i=out.length-1;i>0;i--) { const j=Math.floor(rand()*(i+1)); [out[i],out[j]]=[out[j],out[i]]; }
+return out;
+}
+function assignments(seed) {
+const seedFn=xmur3(seed);
+const rand=mulberry32(seedFn());
+const shuffledTeams=shuffle(TEAMS,rand);
+const chosenDrivers=shuffle(DRIVERS,rand).slice(0,TEAMS.length);
+return shuffledTeams.map((team,i)=>({team,driver:chosenDrivers[i]}));
+}
+function params() { return new URLSearchParams(location.search); }
+function makeLink(start, interval, seed) {
+const u=new URL(location.href.split('?')[0]);
+u.searchParams.set('start', String(start));
+u.searchParams.set('interval', String(interval));
+u.searchParams.set('seed', seed);
+return u.toString();
+}
+const revealInput=document.getElementById('revealTime');
+const now=new Date(Date.now()+10*60*1000);
+now.setSeconds(0,0);
+revealInput.value=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+document.getElementById('createLink').onclick=()=>{
+const start=new Date(revealInput.value).getTime();
+const interval=Number(document.getElementById('interval').value);
+const seed=document.getElementById('seed').value.trim() || crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
+if(!Number.isFinite(start)) return alert('Choose a reveal date and time.');
+const link=makeLink(start,interval,seed);
+document.getElementById('shareLink').textContent=link;
+document.getElementById('shareArea').classList.remove('hidden');
+};
+document.getElementById('copyLink').onclick=async()=>{
+await navigator.clipboard.writeText(document.getElementById('shareLink').textContent);
+document.getElementById('copyLink').textContent='Copied!';
+};
+document.getElementById('preview').onclick=()=>{
+const seed=document.getElementById('seed').value.trim() || 'preview';
+runReveal(Date.now()+2000, Number(document.getElementById('interval').value), seed, true);
+};
+function runReveal(start, intervalSec, seed, preview=false) {
+document.getElementById('setup').classList.add('hidden');
+document.getElementById('show').classList.remove('hidden');
+const list=assignments(seed);
+const waiting=document.getElementById('waiting');
+const reveal=document.getElementById('reveal');
+const finished=document.getElementById('finished');
+document.getElementById('scheduled').textContent=new Date(start).toLocaleString([],{dateStyle:'full',timeStyle:'short'});
+let timer;
+function tick() {
+const diff=start-Date.now();
+if(diff<=0) { clearInterval(timer); startSequence(); return; }
+const total=Math.ceil(diff/1000);
+const h=Math.floor(total/3600), m=Math.floor((total%3600)/60), s=total%60;
+document.getElementById('countdown').textContent=(h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+tick(); timer=setInterval(tick,250);
+function startSequence() {
+waiting.classList.add('hidden'); reveal.classList.remove('hidden');
+const elapsed=Math.max(0,Date.now()-start);
+let index=Math.min(list.length, Math.floor(elapsed/(intervalSec*1000)));
+show(index);
+const loop=setInterval(()=>{
+index++;
+if(index>=list.length) { clearInterval(loop); showFinal(); }
+else show(index);
+},intervalSec*1000);
+}
+function show(i) {
+const a=list[i];
+if(!a) return showFinal();
+document.getElementById('revealCounter').textContent=`Assignment ${i+1} of ${list.length}`;
+document.getElementById('bar').style.width=`${((i+1)/list.length)*100}%`;
+document.getElementById('teamName').textContent=a.team;
+document.getElementById('carNo').textContent='#'+a.driver.car;
+document.getElementById('driverName').textContent=a.driver.name;
+document.getElementById('driverMeta').textContent=a.driver.team+' • '+a.driver.make;
+const card=document.getElementById('driverCard');
+card.style.animation='none'; void card.offsetWidth; card.style.animation='';
+}
+function showFinal() {
+reveal.classList.add('hidden'); finished.classList.remove('hidden');
+document.getElementById('results').innerHTML=list.map((a,i)=>`
+<div class="result">
+<div class="num">${i+1}</div>
+<div><strong>${a.team}</strong><span class="small">Assigned driver</span></div>
+<div class="right"><strong>#${a.driver.car} ${a.driver.name}</strong><span class="small">${a.driver.make}</span></div>
+</div>`).join('');
+}
+}
+const p=params();
+if(p.has('start')&&p.has('seed')) {
+const start=Number(p.get('start'));
+const interval=Math.max(3,Number(p.get('interval')||8));
+const seed=p.get('seed');
+runReveal(start,interval,seed);
+}
+</script>
+</body>
+</html>
