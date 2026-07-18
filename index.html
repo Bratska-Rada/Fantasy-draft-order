@@ -74,8 +74,8 @@ border-radius:24px;padding:24px;animation:pop .55s cubic-bezier(.2,.8,.2,1)}
 </select>
 </div>
 </div>
-<label>Secret seed</label>
-<input id="seed" placeholder="Type anything, e.g. brotherhood-2026">
+<label>Private randomization seed</label>
+<input id="seed" placeholder="Only the organizer sees this">
 <div class="actions">
 <button class="primary" id="createLink">Create synchronized reveal link</button>
 <button class="secondary" id="preview">Preview now</button>
@@ -87,7 +87,7 @@ border-radius:24px;padding:24px;animation:pop .55s cubic-bezier(.2,.8,.2,1)}
 <button class="secondary" id="copyLink">Copy link</button>
 </div>
 </div>
-<p class="note">Everyone opening the same link gets the same driver assignments and the same timed reveal. The seed is encoded in the URL, so keep the organizer link private until you are ready to share it.</p>
+<p class="note">The seed stays private on your device. The public viewer link contains the completed assignments, not the seed. Anyone opening it later will see the final results automatically.</p>
 </section>
 <section id="show" class="card hidden">
 <div id="waiting">
@@ -109,6 +109,7 @@ border-radius:24px;padding:24px;animation:pop .55s cubic-bezier(.2,.8,.2,1)}
 <div id="finished" class="hidden">
 <h2 style="text-align:center">Final assignments</h2>
 <div class="results" id="results"></div>
+<div class="actions" style="justify-content:center"><button class="secondary" id="copyResults">Copy results</button></div>
 </div>
 </section>
 </div>
@@ -136,11 +137,17 @@ const chosenDrivers=shuffle(DRIVERS,rand).slice(0,TEAMS.length);
 return shuffledTeams.map((team,i)=>({team,driver:chosenDrivers[i]}));
 }
 function params() { return new URLSearchParams(location.search); }
-function makeLink(start, interval, seed) {
+function encodeDraw(list) {
+return btoa(unescape(encodeURIComponent(JSON.stringify(list))));
+}
+function decodeDraw(value) {
+return JSON.parse(decodeURIComponent(escape(atob(value))));
+}
+function makeLink(start, interval, list) {
 const u=new URL(location.href.split('?')[0]);
 u.searchParams.set('start', String(start));
 u.searchParams.set('interval', String(interval));
-u.searchParams.set('seed', seed);
+u.searchParams.set('draw', encodeDraw(list));
 return u.toString();
 }
 const revealInput=document.getElementById('revealTime');
@@ -152,7 +159,7 @@ const start=new Date(revealInput.value).getTime();
 const interval=Number(document.getElementById('interval').value);
 const seed=document.getElementById('seed').value.trim() || crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
 if(!Number.isFinite(start)) return alert('Choose a reveal date and time.');
-const link=makeLink(start,interval,seed);
+const link=makeLink(start,interval,assignments(seed));
 document.getElementById('shareLink').textContent=link;
 document.getElementById('shareArea').classList.remove('hidden');
 };
@@ -162,12 +169,11 @@ document.getElementById('copyLink').textContent='Copied!';
 };
 document.getElementById('preview').onclick=()=>{
 const seed=document.getElementById('seed').value.trim() || 'preview';
-runReveal(Date.now()+2000, Number(document.getElementById('interval').value), seed, true);
+runReveal(Date.now()+2000, Number(document.getElementById('interval').value), assignments(seed), true);
 };
-function runReveal(start, intervalSec, seed, preview=false) {
+function runReveal(start, intervalSec, list, preview=false) {
 document.getElementById('setup').classList.add('hidden');
 document.getElementById('show').classList.remove('hidden');
-const list=assignments(seed);
 const waiting=document.getElementById('waiting');
 const reveal=document.getElementById('reveal');
 const finished=document.getElementById('finished');
@@ -212,14 +218,22 @@ document.getElementById('results').innerHTML=list.map((a,i)=>`
 <div><strong>${a.team}</strong><span class="small">Assigned driver</span></div>
 <div class="right"><strong>#${a.driver.car} ${a.driver.name}</strong><span class="small">${a.driver.make}</span></div>
 </div>`).join('');
+const text=list.map((a,i)=>`${i+1}. ${a.team} — #${a.driver.car} ${a.driver.name}`).join('\n');
+const btn=document.getElementById('copyResults');
+btn.onclick=async()=>{ await navigator.clipboard.writeText(text); btn.textContent='Copied!'; };
 }
+
 }
 const p=params();
-if(p.has('start')&&p.has('seed')) {
+if(p.has('start')&&p.has('draw')) {
+try {
 const start=Number(p.get('start'));
 const interval=Math.max(3,Number(p.get('interval')||8));
-const seed=p.get('seed');
-runReveal(start,interval,seed);
+const list=decodeDraw(p.get('draw'));
+runReveal(start,interval,list);
+} catch(e) {
+alert('This reveal link is invalid or incomplete.');
+}
 }
 </script>
 </body>
